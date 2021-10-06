@@ -1,0 +1,31 @@
+{
+  "name": "pixel8tr",
+  "version": "1.0.0",
+  "description": "pixellate images with p5js",
+  "author": "Michael Paulukonis",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate",
+    "clean": "rm -rf dist",
+    "deploy": "gh-pages -t -d dist",
+    "bump": "npm version patch",
+    "publish": "npm run bump && DEPLOY_ENV=GH_PAGES npm run generate && npm run deploy",
+    "lint:clean": "standard --fix",
+    "lint": "standard"
+  },
+  "dependencies": {
+    "dat.gui": "^0.7.6",
+    "nuxt": "^2.0.0",
+    "p5": "^0.10.2"
+  },
+  "devDependencies": {
+    "eslint-config-p5js": "^1.0.1",
+    "pug": "^2.0.4",
+    "pug-plain-loader": "^1.0.0",
+    "sass-loader": "^8.0.2",
+    "standard": "^14.3.1"
+  }
+}
