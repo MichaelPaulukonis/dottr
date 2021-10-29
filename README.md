@@ -2,6 +2,8 @@
 
 > pixellate images with p5js
 
+This doesn't even work, but I'm going to make it dots (circles) instead
+
 ## Build Setup
 
 ``` bash

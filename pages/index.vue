@@ -16,7 +16,7 @@
 import P5 from 'p5'
 import Sketch from '@/assets/javascript/sketch.js'
 
-let pchrome
+let dottr
 
 export default {
   components: {
@@ -29,7 +29,7 @@ export default {
   },
   mounted () {
     const builder = (p5Instance) => {
-      pchrome = new Sketch({ p5Instance }) // eslint-disable-line no-new
+      dottr = new Sketch(p5Instance) // eslint-disable-line no-new
     }
 
     new P5(builder, 'sketch-holder') // eslint-disable-line no-new
