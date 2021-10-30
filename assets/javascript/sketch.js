@@ -1,8 +1,9 @@
 import saveAs from 'file-saver'
 import { datestring, filenamer } from './filelib'
+import debounce from 'debounce'
 
 export default function ($p5) {
-  const pixelationLevel = 20
+  // const pixelationLevel = 20
   let namer = () => { }
   const params = {
     square: true,
@@ -13,7 +14,8 @@ export default function ($p5) {
     image: {
       data: null,
       name: ''
-    }
+    },
+    slider: null
   }
 
   const toggle = bool => !bool
@@ -22,6 +24,7 @@ export default function ($p5) {
   const toggleCircle = () => { params.circle = toggle(params.circle) }
 
   const redraw = () => {
+    const pixelationLevel = params.slider.value()
     params.image.data.loadPixels()
     $p5.background(0)
     const backtrack = Math.round(pixelationLevel / 2)
@@ -82,6 +85,10 @@ export default function ($p5) {
     $p5.pixelDensity(1)
     $p5.image(params.image.data, 0, 0, params.image.data.width, params.image.data.height)
     $p5.noStroke()
+    params.slider = $p5.createSlider(2, 40, 10, 1).parent('simple-gui')
+    // params.slider.position(10, 10)
+    params.slider.style('width', '80px')
+    params.slider.input(debounce(redraw, 200))
   }
 
   $p5.keyTyped = () => {

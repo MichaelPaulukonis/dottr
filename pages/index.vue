@@ -5,6 +5,7 @@
   button#focus(@click="setFocus") focus on canvas
 
   div
+    #simple-gui
     #sketch-holder
       // Our sketch will go here!
     noscript
