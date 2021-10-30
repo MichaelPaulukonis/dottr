@@ -3,7 +3,6 @@ import { datestring, filenamer } from './filelib'
 import debounce from 'debounce'
 
 export default function ($p5) {
-  // const pixelationLevel = 20
   let namer = () => { }
   const params = {
     square: true,
@@ -24,7 +23,7 @@ export default function ($p5) {
   const toggleCircle = () => { params.circle = toggle(params.circle) }
 
   const redraw = () => {
-    const pixelationLevel = params.slider.value()
+    const pixelationLevel = Math.floor($p5.width / params.pixelizationSlider.value())
     params.image.data.loadPixels()
     $p5.background(0)
     const backtrack = Math.round(pixelationLevel / 2)
@@ -40,7 +39,8 @@ export default function ($p5) {
           $p5.square(x, y, pixelationLevel)
         }
         if (params.circle) {
-          $p5.circle(x - backtrack, y - backtrack, pixelationLevel)
+          const size = pixelationLevel - params.insetSlider.value()
+          $p5.circle(x - backtrack, y - backtrack, size)
         }
       }
     }
@@ -85,10 +85,14 @@ export default function ($p5) {
     $p5.pixelDensity(1)
     $p5.image(params.image.data, 0, 0, params.image.data.width, params.image.data.height)
     $p5.noStroke()
-    params.slider = $p5.createSlider(2, 40, 10, 1).parent('simple-gui')
-    // params.slider.position(10, 10)
-    params.slider.style('width', '80px')
-    params.slider.input(debounce(redraw, 200))
+    params.pixelizationSlider = $p5.createSlider(2, 100, 20, 1)
+      .parent('simple-gui')
+      .style('width', '200px')
+      .input(debounce(redraw, 200))
+    params.insetSlider = $p5.createSlider(0, 100, 0, 1)
+      .parent('simple-gui')
+      .style('width', '200px')
+      .input(debounce(redraw, 200))
   }
 
   $p5.keyTyped = () => {
