@@ -21,4 +21,7 @@ $ npm run start
 $ npm run generate
 ```
 
-For detailed explanation on how things work, check out [Nuxt.js docs](https://nuxtjs.org).
+## research
+
+- [grid library](https://github.com/musa11971/p5js-grid)
+- [another lib](https://github.com/temchik76/p5js-grid)

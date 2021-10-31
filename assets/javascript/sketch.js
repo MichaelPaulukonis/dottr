@@ -14,7 +14,9 @@ export default function ($p5) {
       data: null,
       name: ''
     },
-    slider: null
+    pixelizationSlider: null,
+    insetSlider: null,
+    resizeToPixels: null
   }
 
   const toggle = bool => !bool
@@ -23,23 +25,25 @@ export default function ($p5) {
   const toggleCircle = () => { params.circle = toggle(params.circle) }
 
   const redraw = () => {
-    const pixelationLevel = Math.floor($p5.width / params.pixelizationSlider.value())
+    params.dirty = false
+
+    const pixelSize = Math.floor($p5.width / params.pixelizationSlider.value())
+
+    // don't go by image width/height
+    // GO BY THE PIXELS (square, circle, whatever)
     params.image.data.loadPixels()
-    $p5.background(0)
-    const backtrack = Math.round(pixelationLevel / 2)
-    for (let x = 0; x < $p5.width + backtrack; x += pixelationLevel) {
-      for (let y = 0; y < $p5.height + backtrack; y += pixelationLevel) {
+    $p5.background('#000')
+    const backtrack = Math.round(pixelSize / 2)
+    for (let x = 0; x < $p5.width + backtrack; x += pixelSize) {
+      for (let y = 0; y < $p5.height + backtrack; y += pixelSize) {
         const i = (x + y * $p5.width) * 4
-        const r = params.image.data.pixels[i + 0]
-        const g = params.image.data.pixels[i + 1]
-        const b = params.image.data.pixels[i + 2]
-        const a = params.image.data.pixels[i + 3]
+        const [r, g, b, a] = params.image.data.pixels.slice(i, i + 4)
         $p5.fill(r, g, b, a)
         if (params.square) {
-          $p5.square(x, y, pixelationLevel)
+          $p5.square(x, y, pixelSize)
         }
         if (params.circle) {
-          const size = pixelationLevel - params.insetSlider.value()
+          const size = pixelSize - params.insetSlider.value()
           $p5.circle(x - backtrack, y - backtrack, size)
         }
       }
@@ -93,6 +97,8 @@ export default function ($p5) {
       .parent('simple-gui')
       .style('width', '200px')
       .input(debounce(redraw, 200))
+    params.resizeToPixels = $p5.createCheckbox('resize to pixels', false)
+      .parent('simple-gui')
   }
 
   $p5.keyTyped = () => {
@@ -110,7 +116,6 @@ export default function ($p5) {
 
   $p5.draw = () => {
     if (params.dirty) {
-      params.dirty = false
       redraw()
     }
   }

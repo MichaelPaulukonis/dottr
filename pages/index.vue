@@ -2,8 +2,6 @@
 #app
   #title pixel8r
 
-  button#focus(@click="setFocus") focus on canvas
-
   div
     #simple-gui
     #sketch-holder
@@ -20,14 +18,6 @@ import Sketch from '@/assets/javascript/sketch.js'
 let dottr
 
 export default {
-  components: {
-  },
-  data () {
-    return {
-      currentText: 'placeholder',
-      params: {}
-    }
-  },
   mounted () {
     const builder = (p5Instance) => {
       dottr = new Sketch(p5Instance) // eslint-disable-line no-new
@@ -36,9 +26,6 @@ export default {
     new P5(builder, 'sketch-holder') // eslint-disable-line no-new
   },
   methods: {
-    setFocus () {
-      this.canvas().focus()
-    },
     canvas () {
       return document.getElementsByTagName('canvas')[0]
     }
@@ -47,9 +34,8 @@ export default {
 </script>
 
 <style scoped>
-/* @import "@/assets/css/core.css"; */
-#title {
-  background: linear-gradient(90deg, #f0f, #ff0);
+  #title {
+  background: linear-gradient(90deg, #7fff00, #fb33db);
   line-height: 1.5em;
   font-weight: 600;
   width: 25vw;
