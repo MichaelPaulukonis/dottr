@@ -16,7 +16,8 @@ export default function ($p5) {
     },
     pixelizationSlider: null,
     insetSlider: null,
-    resizeToPixels: null
+    resizeToPixels: null,
+    margin: 0
   }
 
   const toggle = bool => !bool
@@ -24,10 +25,81 @@ export default function ($p5) {
   const toggleSquare = () => { params.square = toggle(params.square) }
   const toggleCircle = () => { params.circle = toggle(params.circle) }
 
+  const pixelGrid = ({ pixelSize, img }) => { // eslint-disable-line no-unused-vars
+    const width = Math.floor($p5.width / pixelSize)
+    const height = Math.floor($p5.height / pixelSize)
+    const pixels = new Array(width * height).fill({})
+      .map((p, i) => ({
+        x: Math.floor(i / width),
+        y: i % width
+      }))
+    let index = 0
+    const reset = () => {
+      index = 0
+    }
+
+    // TBH, I can't see why we'd do this
+    // instead of mapping over the entire array
+    const hasNext = () => index < pixels.length
+    const next = () => {
+      index += 1
+      return hasNext() ? pixels[index] : null
+    }
+
+    return {
+      pixels,
+      width,
+      height,
+      iter: next,
+      reset
+    }
+  }
+
   const redraw = () => {
     params.dirty = false
 
+    // "pixelSize" is really the number of pixels in width
+    // min 2, max 100
     const pixelSize = Math.floor($p5.width / params.pixelizationSlider.value())
+
+    // not right - we crop off a portion of the image
+    // but we don't ignore those pixels
+    // so, we have to stop reading those
+    // heh.
+    // const newWidth = Math.floor($p5.width / pixelSize) * pixelSize
+    // const newHeight = Math.floor($p5.height / pixelSize) * pixelSize
+
+    // $p5.resizeCanvas(newWidth, newHeight)
+
+    // don't go by image width/height
+    // GO BY THE PIXELS (square, circle, whatever)
+    params.image.data.loadPixels()
+    $p5.background('#000')
+    const backtrack = Math.round(pixelSize / 2)
+    const insetSize = pixelSize - (pixelSize * (params.insetSlider.value() / 100)) || pixelSize
+
+    for (let x = 0; x < $p5.width + backtrack; x += pixelSize) {
+      for (let y = 0; y < $p5.height + backtrack; y += pixelSize) {
+        const i = (x + y * $p5.width) * 4
+        const [r, g, b, a] = params.image.data.pixels.slice(i, i + 4)
+        $p5.fill(r, g, b, a)
+        if (params.square) {
+          $p5.square(x, y, pixelSize)
+        }
+        if (params.circle) {
+          // TODO: inset s/b relative to size of pixel, not absolute
+          // const size = pixelSize - params.insetSlider.value()
+          $p5.circle(x - backtrack, y - backtrack, insetSize)
+        }
+      }
+    }
+  }
+
+  const redrawOriginal = () => { // eslint-disable-line no-unused-vars
+    params.dirty = false
+
+    const pixelSize = Math.floor($p5.width / params.pixelizationSlider.value())
+    // $p5.resizeCanvas(params.image.data.width, params.image.data.height)
 
     // don't go by image width/height
     // GO BY THE PIXELS (square, circle, whatever)
@@ -93,7 +165,7 @@ export default function ($p5) {
       .parent('simple-gui')
       .style('width', '200px')
       .input(debounce(redraw, 200))
-    params.insetSlider = $p5.createSlider(0, 100, 0, 1)
+    params.insetSlider = $p5.createSlider(0, 99, 0, 1)
       .parent('simple-gui')
       .style('width', '200px')
       .input(debounce(redraw, 200))
@@ -102,13 +174,13 @@ export default function ($p5) {
   }
 
   $p5.keyTyped = () => {
-    if ($p5.key === 's') {
+    if ($p5.key === '1') {
       toggleSquare()
       params.dirty = true
-    } else if ($p5.key === 'c') {
+    } else if ($p5.key === '2') {
       toggleCircle()
       params.dirty = true
-    } else if ($p5.key === 'd') {
+    } else if ($p5.key === 's') {
       savit()
     }
     return false

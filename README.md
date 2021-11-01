@@ -25,3 +25,17 @@ $ npm run generate
 
 - [grid library](https://github.com/musa11971/p5js-grid)
 - [another lib](https://github.com/temchik76/p5js-grid)
+- [color average of region](https://stackoverflow.com/questions/44556692/javascript-get-average-color-from-a-certain-area-of-an-image/44557266)
+- <https://en.wikipedia.org/wiki/Rasterisation>
+- 
+
+### grid notes
+
+image: 237 x 485
+pixel: 20 x 20
+
+237 / 20 = 11.85
+11 * 20 = 220
+
+485 / 20 = 24.25
+24 * 20 = 480
