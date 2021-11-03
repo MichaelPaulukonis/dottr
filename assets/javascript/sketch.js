@@ -16,7 +16,6 @@ export default function ($p5) {
     pixelizationSlider: null,
     insetSlider: null,
     marginSlider: null,
-    resizeToPixels: null,
     margin: 0
   }
 
@@ -25,42 +24,27 @@ export default function ($p5) {
   const toggleSquare = () => { params.square = toggle(params.square) }
   const toggleCircle = () => { params.circle = toggle(params.circle) }
 
-  const getColor = ({ x, y, pixelSize }) => { // eslint-disable-line no-unused-vars
-    const img = params.image.data
+  const getColor = ({ x, y, pixelSize }) => {
+    const img = params.image.data // external, doh
 
-    const i = (x * pixelSize + y * pixelSize * img.width) * 4
+    const i = ((x * pixelSize) + ((y * pixelSize) * img.width)) * 4
     const [r, g, b, a] = img.pixels.slice(i, i + 4) || [0, 0, 0, 0]
     const color = $p5.color(r, g, b, a)
     return color
   }
 
-  const pixelGrid = ({ pixelSize, img }) => { // eslint-disable-line no-unused-vars
-    const width = Math.floor($p5.width / pixelSize)
-    const height = Math.floor($p5.height / pixelSize)
-    const pixels = new Array(width * height).fill({})
+  const pixelGrid = ({ pixelSize, img }) => {
+    const width = Math.floor(img.width / pixelSize)
+    const height = Math.floor(img.height / pixelSize)
+    const pixels = new Array((width + 1) * (height + 1)).fill({})
       .map((p, i) => ({
-        x: Math.floor(i / width),
-        y: i % width
+        x: Math.floor(i / (height + 1)),
+        y: i % (height + 1)
       }))
-    let index = 0
-    const reset = () => {
-      index = 0
-    }
-
-    // TBH, I can't see why we'd do this
-    // instead of mapping over the entire array
-    const hasNext = () => index < pixels.length
-    const next = () => {
-      index += 1
-      return hasNext() ? pixels[index] : null
-    }
-
     return {
       pixels,
       width,
-      height,
-      iter: next,
-      reset
+      height
     }
   }
 
@@ -72,8 +56,9 @@ export default function ($p5) {
     // "pixelSize" is really the number of pixels in width
     // min 2, max 100
     const pxsz = pixelSize()
-    const newWidth = Math.floor($p5.width / pxsz) * pxsz
-    const newHeight = Math.floor($p5.height / pxsz) * pxsz
+    const image = params.image.data
+    const newWidth = Math.floor(image.width / pxsz) * pxsz
+    const newHeight = Math.floor(image.height / pxsz) * pxsz
     $p5.resizeCanvas(newWidth, newHeight)
 
     // don't go by image width/height
@@ -83,22 +68,39 @@ export default function ($p5) {
     const backtrack = Math.round(pxsz / 2)
     const insetSize = pxsz - (pxsz * (params.insetSlider.value() / 100)) || pxsz
 
-    const width = Math.floor($p5.width / pxsz) + 1
-    const height = Math.floor($p5.height / pxsz) + 1
+    // const width = Math.floor(image.width / pxsz)
+    // const height = Math.floor(image.height / pxsz)
+
+    const grid = pixelGrid({ pixelSize: pxsz, img: image })
+    // const i = 0
+    grid.pixels.forEach(p => {
+      const color = getColor({ x: p.x, y: p.y, pixelSize: pxsz })
+      $p5.fill(color)
+      if (params.square) {
+        $p5.square(p.x * pxsz, p.y * pxsz, pxsz)
+      }
+      if (params.circle) {
+        $p5.circle(p.x * pxsz - backtrack, p.y * pxsz - backtrack, insetSize)
+      }
+    })
 
     // looks like we can do the grid thing, now...
-    for (let x = 0; x < width; x += 1) {
-      for (let y = 0; y < height; y += 1) {
-        const color = getColor({ x, y, pixelSize: pxsz })
-        $p5.fill(color)
-        if (params.square) {
-          $p5.square(x * pxsz, y * pxsz, pxsz)
-        }
-        if (params.circle) {
-          $p5.circle(x * pxsz - backtrack, y * pxsz - backtrack, insetSize)
-        }
-      }
-    }
+    // for (let x = 0; x <= width; x += 1) {
+    //   for (let y = 0; y <= height; y += 1) {
+    //     if (x !== grid.pixels[i]?.x || y !== grid.pixels[i]?.y) {
+    //       console.log(`x: ${x} - ${grid.pixels[i]?.x} .y: ${y} - ${grid.pixels[i]?.y}`)
+    //     }
+    //     i++
+    //     const color = getColor({ x, y, pixelSize: pxsz })
+    //     $p5.fill(color)
+    //     if (params.square) {
+    //       $p5.square(x * pxsz, y * pxsz, pxsz)
+    //     }
+    //     if (params.circle) {
+    //       $p5.circle(x * pxsz - backtrack, y * pxsz - backtrack, insetSize)
+    //     }
+    //   }
+    // }
   }
 
   const redrawOriginal = () => { // eslint-disable-line no-unused-vars
@@ -180,8 +182,6 @@ export default function ($p5) {
       .parent('simple-gui')
       .style('width', '200px')
       .input(debounce(redraw, 200))
-    params.resizeToPixels = $p5.createCheckbox('resize to pixels', false)
-      .parent('simple-gui')
     params.marginSlider = $p5.createSlider(0, 100, 0, 1)
       .parent('simple-gui')
       .style('width', '200px')
