@@ -9,13 +9,13 @@ export default function ($p5) {
     circle: true,
     dirty: true,
     img: null,
-    imageName: '',
     image: {
       data: null,
       name: ''
     },
     pixelizationSlider: null,
     insetSlider: null,
+    marginSlider: null,
     resizeToPixels: null,
     margin: 0
   }
@@ -24,6 +24,15 @@ export default function ($p5) {
 
   const toggleSquare = () => { params.square = toggle(params.square) }
   const toggleCircle = () => { params.circle = toggle(params.circle) }
+
+  const getColor = ({ x, y, pixelSize }) => { // eslint-disable-line no-unused-vars
+    const img = params.image.data
+
+    const i = (x * pixelSize + y * pixelSize * img.width) * 4
+    const [r, g, b, a] = img.pixels.slice(i, i + 4) || [0, 0, 0, 0]
+    const color = $p5.color(r, g, b, a)
+    return color
+  }
 
   const pixelGrid = ({ pixelSize, img }) => { // eslint-disable-line no-unused-vars
     const width = Math.floor($p5.width / pixelSize)
@@ -55,41 +64,38 @@ export default function ($p5) {
     }
   }
 
+  const pixelSize = () => Math.floor($p5.width / params.pixelizationSlider.value())
+
   const redraw = () => {
     params.dirty = false
 
     // "pixelSize" is really the number of pixels in width
     // min 2, max 100
-    const pixelSize = Math.floor($p5.width / params.pixelizationSlider.value())
-
-    // not right - we crop off a portion of the image
-    // but we don't ignore those pixels
-    // so, we have to stop reading those
-    // heh.
-    // const newWidth = Math.floor($p5.width / pixelSize) * pixelSize
-    // const newHeight = Math.floor($p5.height / pixelSize) * pixelSize
-
-    // $p5.resizeCanvas(newWidth, newHeight)
+    const pxsz = pixelSize()
+    const newWidth = Math.floor($p5.width / pxsz) * pxsz
+    const newHeight = Math.floor($p5.height / pxsz) * pxsz
+    $p5.resizeCanvas(newWidth, newHeight)
 
     // don't go by image width/height
     // GO BY THE PIXELS (square, circle, whatever)
     params.image.data.loadPixels()
     $p5.background('#000')
-    const backtrack = Math.round(pixelSize / 2)
-    const insetSize = pixelSize - (pixelSize * (params.insetSlider.value() / 100)) || pixelSize
+    const backtrack = Math.round(pxsz / 2)
+    const insetSize = pxsz - (pxsz * (params.insetSlider.value() / 100)) || pxsz
 
-    for (let x = 0; x < $p5.width + backtrack; x += pixelSize) {
-      for (let y = 0; y < $p5.height + backtrack; y += pixelSize) {
-        const i = (x + y * $p5.width) * 4
-        const [r, g, b, a] = params.image.data.pixels.slice(i, i + 4)
-        $p5.fill(r, g, b, a)
+    const width = Math.floor($p5.width / pxsz) + 1
+    const height = Math.floor($p5.height / pxsz) + 1
+
+    // looks like we can do the grid thing, now...
+    for (let x = 0; x < width; x += 1) {
+      for (let y = 0; y < height; y += 1) {
+        const color = getColor({ x, y, pixelSize: pxsz })
+        $p5.fill(color)
         if (params.square) {
-          $p5.square(x, y, pixelSize)
+          $p5.square(x * pxsz, y * pxsz, pxsz)
         }
         if (params.circle) {
-          // TODO: inset s/b relative to size of pixel, not absolute
-          // const size = pixelSize - params.insetSlider.value()
-          $p5.circle(x - backtrack, y - backtrack, insetSize)
+          $p5.circle(x * pxsz - backtrack, y * pxsz - backtrack, insetSize)
         }
       }
     }
@@ -132,9 +138,14 @@ export default function ($p5) {
     saver($p5.drawingContext.canvas, namer() + '.png')
   }
 
-  const imageReady = () => {
+  const imageReady = (args) => {
+    console.log(args)
     $p5.resizeCanvas(params.image.data.width, params.image.data.height)
     params.image.data.loadPixels()
+    params.image.size = {
+      width: params.image.data.width,
+      height: params.image.data.height
+    }
     params.imageLoaded = true
     redraw()
   }
@@ -171,6 +182,10 @@ export default function ($p5) {
       .input(debounce(redraw, 200))
     params.resizeToPixels = $p5.createCheckbox('resize to pixels', false)
       .parent('simple-gui')
+    params.marginSlider = $p5.createSlider(0, 100, 0, 1)
+      .parent('simple-gui')
+      .style('width', '200px')
+      .input(debounce(redraw, 200))
   }
 
   $p5.keyTyped = () => {
