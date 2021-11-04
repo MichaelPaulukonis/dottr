@@ -53,26 +53,22 @@ export default function ($p5) {
   const redraw = () => {
     params.dirty = false
 
-    // "pixelSize" is really the number of pixels in width
-    // min 2, max 100
     const pxsz = pixelSize()
     const image = params.image.data
-    const newWidth = Math.floor(image.width / pxsz) * pxsz
-    const newHeight = Math.floor(image.height / pxsz) * pxsz
+    const margin = params.marginSlider.value()
+    const newWidth = Math.floor(image.width / pxsz) * pxsz + (2 * margin)
+    const newHeight = Math.floor(image.height / pxsz) * pxsz + (2 * margin)
     $p5.resizeCanvas(newWidth, newHeight)
 
-    // don't go by image width/height
-    // GO BY THE PIXELS (square, circle, whatever)
     params.image.data.loadPixels()
-    $p5.background('#000')
+    $p5.background('#000') // TODO: or white!!!
     const backtrack = Math.round(pxsz / 2)
     const insetSize = pxsz - (pxsz * (params.insetSlider.value() / 100)) || pxsz
 
-    // const width = Math.floor(image.width / pxsz)
-    // const height = Math.floor(image.height / pxsz)
+    $p5.push()
+    $p5.translate(margin, margin)
 
     const grid = pixelGrid({ pixelSize: pxsz, img: image })
-    // const i = 0
     grid.pixels.forEach(p => {
       const color = getColor({ x: p.x, y: p.y, pixelSize: pxsz })
       $p5.fill(color)
@@ -83,51 +79,7 @@ export default function ($p5) {
         $p5.circle(p.x * pxsz - backtrack, p.y * pxsz - backtrack, insetSize)
       }
     })
-
-    // looks like we can do the grid thing, now...
-    // for (let x = 0; x <= width; x += 1) {
-    //   for (let y = 0; y <= height; y += 1) {
-    //     if (x !== grid.pixels[i]?.x || y !== grid.pixels[i]?.y) {
-    //       console.log(`x: ${x} - ${grid.pixels[i]?.x} .y: ${y} - ${grid.pixels[i]?.y}`)
-    //     }
-    //     i++
-    //     const color = getColor({ x, y, pixelSize: pxsz })
-    //     $p5.fill(color)
-    //     if (params.square) {
-    //       $p5.square(x * pxsz, y * pxsz, pxsz)
-    //     }
-    //     if (params.circle) {
-    //       $p5.circle(x * pxsz - backtrack, y * pxsz - backtrack, insetSize)
-    //     }
-    //   }
-    // }
-  }
-
-  const redrawOriginal = () => { // eslint-disable-line no-unused-vars
-    params.dirty = false
-
-    const pixelSize = Math.floor($p5.width / params.pixelizationSlider.value())
-    // $p5.resizeCanvas(params.image.data.width, params.image.data.height)
-
-    // don't go by image width/height
-    // GO BY THE PIXELS (square, circle, whatever)
-    params.image.data.loadPixels()
-    $p5.background('#000')
-    const backtrack = Math.round(pixelSize / 2)
-    for (let x = 0; x < $p5.width + backtrack; x += pixelSize) {
-      for (let y = 0; y < $p5.height + backtrack; y += pixelSize) {
-        const i = (x + y * $p5.width) * 4
-        const [r, g, b, a] = params.image.data.pixels.slice(i, i + 4)
-        $p5.fill(r, g, b, a)
-        if (params.square) {
-          $p5.square(x, y, pixelSize)
-        }
-        if (params.circle) {
-          const size = pixelSize - params.insetSlider.value()
-          $p5.circle(x - backtrack, y - backtrack, size)
-        }
-      }
-    }
+    $p5.pop()
   }
 
   const saver = (canvas, name) => {
