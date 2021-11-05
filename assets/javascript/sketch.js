@@ -36,10 +36,10 @@ export default function ($p5) {
   const pixelGrid = ({ pixelSize, img }) => {
     const width = Math.floor(img.width / pixelSize)
     const height = Math.floor(img.height / pixelSize)
-    const pixels = new Array((width + 1) * (height + 1)).fill({})
+    const pixels = new Array((width) * (height)).fill({})
       .map((p, i) => ({
-        x: Math.floor(i / (height + 1)),
-        y: i % (height + 1)
+        x: Math.floor(i / (height)),
+        y: i % (height)
       }))
     return {
       pixels,
@@ -48,7 +48,7 @@ export default function ($p5) {
     }
   }
 
-  const pixelSize = () => Math.floor($p5.width / params.pixelizationSlider.value())
+  const pixelSize = () => Math.floor(params.image.data.width / params.pixelizationSlider.value())
 
   const redraw = () => {
     params.dirty = false
@@ -62,7 +62,6 @@ export default function ($p5) {
 
     params.image.data.loadPixels()
     $p5.background('#000') // TODO: or white!!!
-    const backtrack = Math.round(pxsz / 2)
     const insetSize = pxsz - (pxsz * (params.insetSlider.value() / 100)) || pxsz
 
     $p5.push()
@@ -76,7 +75,7 @@ export default function ($p5) {
         $p5.square(p.x * pxsz, p.y * pxsz, pxsz)
       }
       if (params.circle) {
-        $p5.circle(p.x * pxsz - backtrack, p.y * pxsz - backtrack, insetSize)
+        $p5.circle((p.x * pxsz) + pxsz / 2, (p.y * pxsz) + pxsz / 2, insetSize)
       }
     })
     $p5.pop()
