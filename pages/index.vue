@@ -4,7 +4,8 @@
 
   div
     #simple-gui
-    #sketch-holder
+    .parent
+      #sketch-holder.child
       // Our sketch will go here!
     noscript
       p JavaScript is required to view the contents of this page.
@@ -33,7 +34,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
   #title {
   background: linear-gradient(90deg, #7fff00, #fb33db);
   line-height: 1.5em;
@@ -52,5 +53,16 @@ export default {
 
 .text-controls {
   float: right;
+}
+
+/* .parent {
+  position: relative;
+  top: 40px; left: 40px;
+} */
+
+#defaultCanvas0 {
+  position: relative;
+  top: 40px; left: 40px;
+  transform-origin: left top;
 }
 </style>

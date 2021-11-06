@@ -5,7 +5,8 @@ import debounce from 'debounce'
 export default function ($p5) {
   let namer = () => { }
   const params = {
-    square: true,
+    ground: '#fff',
+    square: false,
     circle: true,
     dirty: true,
     img: null,
@@ -13,6 +14,7 @@ export default function ($p5) {
       data: null,
       name: ''
     },
+    canvas: null,
     pixelizationSlider: null,
     insetSlider: null,
     marginSlider: null,
@@ -23,6 +25,8 @@ export default function ($p5) {
 
   const toggleSquare = () => { params.square = toggle(params.square) }
   const toggleCircle = () => { params.circle = toggle(params.circle) }
+
+  const toggleGround = () => { params.ground = params.ground === '#fff' ? '#000' : '#fff' }
 
   const getColor = ({ x, y, pixelSize }) => {
     const img = params.image.data // external, doh
@@ -61,7 +65,7 @@ export default function ($p5) {
     $p5.resizeCanvas(newWidth, newHeight)
 
     params.image.data.loadPixels()
-    $p5.background('#000') // TODO: or white!!!
+    $p5.background(params.ground) // TODO: or white!!!
     const insetSize = pxsz - (pxsz * (params.insetSlider.value() / 100)) || pxsz
 
     $p5.push()
@@ -91,14 +95,32 @@ export default function ($p5) {
     saver($p5.drawingContext.canvas, namer() + '.png')
   }
 
-  const imageReady = (args) => {
-    console.log(args)
-    $p5.resizeCanvas(params.image.data.width, params.image.data.height)
+  // const scale = Math.min(
+  //   availableWidth / contentWidth,
+  //   availableHeight / contentHeight
+  // )
+
+  const imageReady = (pImage) => {
     params.image.data.loadPixels()
     params.image.size = {
       width: params.image.data.width,
       height: params.image.data.height
     }
+
+    const scale = Math.min(
+      $p5.canvas.width / params.image.data.width,
+      $p5.canvas.height / params.image.data.height
+    )
+
+    // $el.css({
+    //   transform: "translate(-50%, -50%) " + "scale(" + scale + ")"
+    // });
+
+    $p5.resizeCanvas(params.image.data.width, params.image.data.height)
+    // TODO: reset the canvas CSS at this point?
+    // params.canvas.elt.style.width = '428px'
+    params.canvas.elt.style.transform = `scale(${scale < 1 ? scale : 1})`
+
     params.imageLoaded = true
     redraw()
   }
@@ -122,18 +144,20 @@ export default function ($p5) {
     const canvas = $p5.createCanvas(params.image.data.width, params.image.data.height)
     canvas.parent('#sketch-holder')
     canvas.drop(gotFile)
+    params.canvas = canvas
+
     $p5.pixelDensity(1)
     $p5.image(params.image.data, 0, 0, params.image.data.width, params.image.data.height)
     $p5.noStroke()
-    params.pixelizationSlider = $p5.createSlider(2, 100, 20, 1)
+    params.pixelizationSlider = $p5.createSlider(2, 100, 7, 1)
       .parent('simple-gui')
       .style('width', '200px')
       .input(debounce(redraw, 200))
-    params.insetSlider = $p5.createSlider(0, 99, 0, 1)
+    params.insetSlider = $p5.createSlider(0, 99, 25, 1)
       .parent('simple-gui')
       .style('width', '200px')
       .input(debounce(redraw, 200))
-    params.marginSlider = $p5.createSlider(0, 100, 0, 1)
+    params.marginSlider = $p5.createSlider(0, 100, 50, 1)
       .parent('simple-gui')
       .style('width', '200px')
       .input(debounce(redraw, 200))
@@ -145,6 +169,9 @@ export default function ($p5) {
       params.dirty = true
     } else if ($p5.key === '2') {
       toggleCircle()
+      params.dirty = true
+    } else if ($p5.key === 'b') {
+      toggleGround()
       params.dirty = true
     } else if ($p5.key === 's') {
       savit()
