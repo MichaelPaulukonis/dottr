@@ -5,6 +5,7 @@
   "author": "Michael Paulukonis",
   "private": true,
   "scripts": {
+    "serve": "nuxt",
     "dev": "nuxt",
     "build": "nuxt build",
     "start": "nuxt start",

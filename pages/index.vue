@@ -46,23 +46,16 @@ export default {
   font-size: 1.65em;
 }
 
-#bodycopy {
-  width: 100%;
-  height: 90%;
+.parent {
+  max-width: 100vw;
+  max-height: 75vh;
+  /* width: 100% */
 }
-
-.text-controls {
-  float: right;
-}
-
-/* .parent {
-  position: relative;
-  top: 40px; left: 40px;
-} */
 
 #defaultCanvas0 {
   position: relative;
   top: 40px; left: 40px;
+  right: 40px;
   transform-origin: left top;
 }
 </style>

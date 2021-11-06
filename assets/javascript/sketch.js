@@ -4,8 +4,12 @@ import debounce from 'debounce'
 
 export default function ($p5) {
   let namer = () => { }
+  const grounds = {
+    black: '#000',
+    white: '#fff'
+  }
   const params = {
-    ground: '#fff',
+    ground: grounds.black,
     square: false,
     circle: true,
     dirty: true,
@@ -26,7 +30,7 @@ export default function ($p5) {
   const toggleSquare = () => { params.square = toggle(params.square) }
   const toggleCircle = () => { params.circle = toggle(params.circle) }
 
-  const toggleGround = () => { params.ground = params.ground === '#fff' ? '#000' : '#fff' }
+  const toggleGround = () => { params.ground = params.ground === grounds.white ? grounds.black : grounds.white }
 
   const getColor = ({ x, y, pixelSize }) => {
     const img = params.image.data // external, doh
@@ -95,11 +99,6 @@ export default function ($p5) {
     saver($p5.drawingContext.canvas, namer() + '.png')
   }
 
-  // const scale = Math.min(
-  //   availableWidth / contentWidth,
-  //   availableHeight / contentHeight
-  // )
-
   const imageReady = (pImage) => {
     params.image.data.loadPixels()
     params.image.size = {
@@ -107,18 +106,16 @@ export default function ($p5) {
       height: params.image.data.height
     }
 
+    // hah-hah, the numbers are inconsistent
+    // and not right oh well
+    const parent = params.canvas.elt.parentElement.parentElement
+
     const scale = Math.min(
-      $p5.canvas.width / params.image.data.width,
-      $p5.canvas.height / params.image.data.height
+      (window.innerWidth * 0.8) / params.image.data.width,
+      (parent.offsetHeight * 0.8) / params.image.data.height
     )
 
-    // $el.css({
-    //   transform: "translate(-50%, -50%) " + "scale(" + scale + ")"
-    // });
-
     $p5.resizeCanvas(params.image.data.width, params.image.data.height)
-    // TODO: reset the canvas CSS at this point?
-    // params.canvas.elt.style.width = '428px'
     params.canvas.elt.style.transform = `scale(${scale < 1 ? scale : 1})`
 
     params.imageLoaded = true
