@@ -83,7 +83,7 @@ export default function ($p5) {
     $p5.resizeCanvas(newWidth, newHeight)
 
     params.image.data.loadPixels()
-    $p5.background(params.ground) // TODO: or white!!!
+    $p5.background(params.ground)
     const insetSize = pxsz - (pxsz * (params.insetSlider.value() / 100)) || pxsz
 
     $p5.push()
@@ -94,7 +94,7 @@ export default function ($p5) {
       const color = getColor({ x: p.x, y: p.y, pixelSize: pxsz })
       $p5.fill(color)
       if (params.square) {
-        $p5.square(p.x * pxsz, p.y * pxsz, pxsz)
+        $p5.square((p.x * pxsz) + (pxsz - insetSize) / 2, (p.y * pxsz) + (pxsz - insetSize) / 2, insetSize)
       }
       if (params.circle) {
         $p5.circle((p.x * pxsz) + pxsz / 2, (p.y * pxsz) + pxsz / 2, insetSize)
