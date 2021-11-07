@@ -8,7 +8,14 @@ export default function ($p5) {
     black: '#000',
     white: '#fff'
   }
-  const params = {
+
+  const initialStats = {
+    pixels: 7,
+    inset: 25,
+    margin: 50
+  }
+
+  let params = {
     ground: grounds.black,
     square: false,
     circle: true,
@@ -31,6 +38,13 @@ export default function ($p5) {
   const toggleCircle = () => { params.circle = toggle(params.circle) }
 
   const toggleGround = () => { params.ground = params.ground === grounds.white ? grounds.black : grounds.white }
+
+  const setParams = ({ newParams = {}, sliders }) => {
+    params = { ...params, ...newParams }
+    params.pixelizationSlider.elt.value = sliders.pixels
+    params.insetSlider.elt.value = sliders.inset
+    params.marginSlider.elt.value = sliders.margin
+  }
 
   const getColor = ({ x, y, pixelSize }) => {
     const img = params.image.data // external, doh
@@ -146,15 +160,15 @@ export default function ($p5) {
     $p5.pixelDensity(1)
     $p5.image(params.image.data, 0, 0, params.image.data.width, params.image.data.height)
     $p5.noStroke()
-    params.pixelizationSlider = $p5.createSlider(2, 100, 7, 1)
+    params.pixelizationSlider = $p5.createSlider(2, 100, initialStats.pixels, 1)
       .parent('simple-gui')
       .style('width', '200px')
       .input(debounce(redraw, 200))
-    params.insetSlider = $p5.createSlider(0, 99, 25, 1)
+    params.insetSlider = $p5.createSlider(0, 99, initialStats.inset, 1)
       .parent('simple-gui')
       .style('width', '200px')
       .input(debounce(redraw, 200))
-    params.marginSlider = $p5.createSlider(0, 100, 50, 1)
+    params.marginSlider = $p5.createSlider(0, 200, initialStats.margin, 1)
       .parent('simple-gui')
       .style('width', '200px')
       .input(debounce(redraw, 200))
@@ -169,6 +183,9 @@ export default function ($p5) {
       params.dirty = true
     } else if ($p5.key === 'b') {
       toggleGround()
+      params.dirty = true
+    } else if ($p5.key === 'd') {
+      setParams({ sliders: initialStats })
       params.dirty = true
     } else if ($p5.key === 's') {
       savit()
