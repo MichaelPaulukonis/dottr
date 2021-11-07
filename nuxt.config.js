@@ -1,5 +1,12 @@
+// only add `router.base = '/<repository-name>/'` if `DEPLOY_ENV` is `GH_PAGES`
+const routerBase = {
+  router: {
+    base: process.env.DEPLOY_ENV === 'GH_PAGES' ? '/dottr/' : ''
+  }
+}
 
 export default {
+  ...routerBase,
   mode: 'spa',
   /*
   ** Headers of the page
