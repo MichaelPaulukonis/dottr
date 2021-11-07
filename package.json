@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "eslint-config-p5js": "^1.0.1",
+    "gh-pages": "^3.2.3",
     "pug": "^2.0.4",
     "pug-plain-loader": "^1.0.0",
     "sass-loader": "^8.0.2",
