@@ -1,6 +1,6 @@
 {
   "name": "pixel8tr",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "pixellate images with p5js",
   "author": "Michael Paulukonis",
   "private": true,
