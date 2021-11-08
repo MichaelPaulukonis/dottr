@@ -99,7 +99,8 @@ export default function ($p5) {
         $p5.square((p.x * pxsz) + (pxsz - insetSize) / 2, (p.y * pxsz) + (pxsz - insetSize) / 2, insetSize)
       }
       if (params.circle) {
-        $p5.circle((p.x * pxsz) + pxsz / 2, (p.y * pxsz) + pxsz / 2, insetSize)
+        scribble.scribbleEllipse((p.x * pxsz) + pxsz / 2, (p.y * pxsz) + pxsz / 2, insetSize, insetSize)
+        // $p5.circle((p.x * pxsz) + pxsz / 2, (p.y * pxsz) + pxsz / 2, insetSize)
       }
     })
     $p5.pop()
