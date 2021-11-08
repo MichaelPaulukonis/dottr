@@ -1,9 +1,11 @@
 import saveAs from 'file-saver'
 import { datestring, filenamer } from './filelib'
 import debounce from 'debounce'
+import Scribble from './p5.scribble'
 
 export default function ($p5) {
   let namer = () => { }
+  let scribble = null
   const grounds = {
     black: '#000',
     white: '#fff'
@@ -156,6 +158,8 @@ export default function ($p5) {
     canvas.parent('#sketch-holder')
     canvas.drop(gotFile)
     params.canvas = canvas
+
+    scribble = new Scribble($p5)
 
     $p5.pixelDensity(1)
     $p5.image(params.image.data, 0, 0, params.image.data.width, params.image.data.height)
