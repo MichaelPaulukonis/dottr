@@ -183,9 +183,10 @@ export default function ($p5) {
       if (params.fast) {
         color = getColor({ img: params.image.data, x: p.x, y: p.y, pixelSize: pxsz })
       } else {
-        const x = (p.x * pxsz) + (pxsz / 2)
-        const y = (p.y * pxsz) + (pxsz / 2)
-        color = getAverageRGBCircle(params.image.data, x, y, pxsz)
+        const radius = Math.floor(pxsz / 2)
+        const x = (p.x * pxsz) + radius
+        const y = (p.y * pxsz) + radius
+        color = getAverageRGBCircle(params.image.data, x, y, radius)
       }
       $p5.fill(color)
       if (params.square) {
