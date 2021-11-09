@@ -27,7 +27,7 @@ $ npm run generate
 - [another lib](https://github.com/temchik76/p5js-grid)
 - [color average of region](https://stackoverflow.com/questions/44556692/javascript-get-average-color-from-a-certain-area-of-an-image/44557266)
 - <https://en.wikipedia.org/wiki/Rasterisation>
-- 
+- [color avg of circular region](https://sighack.com/post/averaging-rgb-colors-the-right-way)
 
 ### grid notes
 
