@@ -11,6 +11,12 @@ export default function ($p5) {
     white: '#fff'
   }
 
+  const modes = [
+    'pixel',
+    'average',
+    'brightest'
+  ]
+
   const initialStats = {
     pixels: 7,
     inset: 25,
@@ -22,7 +28,8 @@ export default function ($p5) {
     square: false,
     circle: true,
     dirty: true,
-    fast: true,
+    average: true,
+    colorMode: 0,
     scribble: false,
     img: null,
     image: {
@@ -66,34 +73,14 @@ export default function ($p5) {
         if (x2 < 0 || x2 >= img.width || y2 < 0 || y2 >= img.height) { continue }
 
         /* If the pixel is outside the circle, skip it */
-        if ($p5.dist(x, y, x2, y2) > r) { continue }
+        if ($p5.dist(x, y, x2, y2) > radius) { continue }
 
         const ii = (x2 + (y2 * img.width)) * 4
         const [rc, gc, bc] = img.pixels.slice(ii, ii + 4) || [0, 0, 0, 0]
         // const c = $p5.color(rc, gc, bc, a)
-
         r += rc * rc
         g += gc * gc
         b += bc * bc
-
-        /* Get the color from the image, add to a running sum */
-        // const c = img.get(x2, y2)
-        // // const rc2 = $p5.red(c)
-        // // const gc2 = $p5.green(c)
-        // // const bc2 = $p5.blue(c)
-
-        // // if (rc !== rc2 || gc !== gc2 || bc !== bc2) {
-        // //   // console.log(`${rc}:${gc}:${bc} - ${rc2}:${gc2}:${bc2}`)
-        // //   difCount++
-        // // }
-
-        // // r += rc2 * rc2
-        // // g += gc2 * gc2
-        // // b += bc2 * bc2
-
-        // r += $p5.red(c) * $p5.red(c)
-        // g += $p5.green(c) * $p5.green(c)
-        // b += $p5.blue(c) * $p5.blue(c)
         num++
       }
     }
@@ -102,33 +89,32 @@ export default function ($p5) {
   }
 
   // based on https://sighack.com/post/averaging-rgb-colors-the-right-way
-  const getAverageRGBCircleWorks = (img, x, y, radius) => {
-    let r = 0
-    let g = 0
-    let b = 0
-    let num = 0
+  const getBrightest = (img, x, y, radius) => {
+    let bmax = 0
+    let cmax = null
 
     /* Iterate through a bounding box in which the circle lies */
     // assumes x,y is the center of circle
     // .... is it?
-    for (let i = x - radius; i < x + radius; i++) {
-      for (let j = y - radius; j < y + radius; j++) {
+    for (let x2 = x - radius; x2 < x + radius; x2++) {
+      for (let y2 = y - radius; y2 < y + radius; y2++) {
         /* If the pixel is outside the canvas, skip it */
-        if (i < 0 || i >= img.width || j < 0 || j >= img.height) { continue }
+        if (x2 < 0 || x2 >= img.width || y2 < 0 || y2 >= img.height) { continue }
 
         /* If the pixel is outside the circle, skip it */
-        if ($p5.dist(x, y, i, j) > r) { continue }
+        if ($p5.dist(x, y, x2, y2) > radius) { continue }
 
-        /* Get the color from the image, add to a running sum */
-        const c = img.get(i, j)
-        r += $p5.red(c) * $p5.red(c)
-        g += $p5.green(c) * $p5.green(c)
-        b += $p5.blue(c) * $p5.blue(c)
-        num++
+        const ii = (x2 + (y2 * img.width)) * 4
+        const [rc, gc, bc, ac] = img.pixels.slice(ii, ii + 4) || [0, 0, 0, 0]
+        const c = $p5.color(rc, gc, bc, ac)
+        const b = $p5.brightness(c)
+        if (b > bmax) {
+          cmax = c
+          bmax = b
+        }
       }
     }
-    /* Return the sqrt of the mean of squared R, G, and B sums */
-    return $p5.color(Math.sqrt(r / num), Math.sqrt(g / num), Math.sqrt(b / num))
+    return cmax
   }
 
   const getColor = ({ img, x, y, pixelSize }) => {
@@ -176,18 +162,29 @@ export default function ($p5) {
 
     const grid = pixelGrid({ pixelSize: pxsz, img: image })
     grid.pixels.forEach(p => {
-      // const color = params.fast
-      //   ? getColor({ img: params.image.data, x: p.x, y: p.y, pixelSize: pxsz })
-      //   : getAverageRGBCircle(params.image.data, p.x, p.y, pxsz)
       let color = null
-      if (params.fast) {
-        color = getColor({ img: params.image.data, x: p.x, y: p.y, pixelSize: pxsz })
-      } else {
-        const radius = Math.floor(pxsz / 2)
-        const x = (p.x * pxsz) + radius
-        const y = (p.y * pxsz) + radius
-        color = getAverageRGBCircle(params.image.data, x, y, radius)
+      switch (params.colorMode) {
+        case 0:
+          color = getColor({ img: params.image.data, x: p.x, y: p.y, pixelSize: pxsz })
+          break
+
+        case 1: {
+          const radius = Math.floor(pxsz / 2)
+          const x = (p.x * pxsz) + radius
+          const y = (p.y * pxsz) + radius
+          color = getBrightest(params.image.data, x, y, radius)
+        }
+          break
+
+        case 2:
+        default: {
+          const radius = Math.floor(pxsz / 2)
+          const x = (p.x * pxsz) + radius
+          const y = (p.y * pxsz) + radius
+          color = getAverageRGBCircle(params.image.data, x, y, radius)
+        }
       }
+
       $p5.fill(color)
       if (params.square) {
         $p5.square((p.x * pxsz) + (pxsz - insetSize) / 2, (p.y * pxsz) + (pxsz - insetSize) / 2, insetSize)
@@ -220,8 +217,6 @@ export default function ($p5) {
       height: params.image.data.height
     }
 
-    // hah-hah, the numbers are inconsistent
-    // and not right oh well
     const parent = params.canvas.elt.parentElement.parentElement
 
     const scale = Math.min(
@@ -290,7 +285,7 @@ export default function ($p5) {
       setParams({ sliders: initialStats })
       params.dirty = true
     } else if ($p5.key === 'f') {
-      params.fast = !params.fast
+      params.colorMode = (params.colorMode + 1) % modes.length
       params.dirty = true
     } else if ($p5.key === 'z') {
       params.scribble = !params.scribble
