@@ -19,7 +19,8 @@ export default function ($p5) {
 
   const initialStats = {
     pixels: 7,
-    inset: 25,
+    inset: 0,
+    outset: 25,
     margin: 50
   }
 
@@ -38,7 +39,8 @@ export default function ($p5) {
     },
     canvas: null,
     pixelizationSlider: null,
-    insetSlider: null,
+    insetSlider: null, // TODO: actual space between pixels
+    outsetSlider: null,
     marginSlider: null,
     margin: 0
   }
@@ -65,8 +67,6 @@ export default function ($p5) {
     let num = 0
 
     /* Iterate through a bounding box in which the circle lies */
-    // assumes x,y is the center of circle
-    // .... is it?
     for (let x2 = x - radius; x2 < x + radius; x2++) {
       for (let y2 = y - radius; y2 < y + radius; y2++) {
         /* If the pixel is outside the canvas, skip it */
@@ -94,8 +94,6 @@ export default function ($p5) {
     let cmax = null
 
     /* Iterate through a bounding box in which the circle lies */
-    // assumes x,y is the center of circle
-    // .... is it?
     for (let x2 = x - radius; x2 < x + radius; x2++) {
       for (let y2 = y - radius; y2 < y + radius; y2++) {
         /* If the pixel is outside the canvas, skip it */
@@ -118,8 +116,6 @@ export default function ($p5) {
   }
 
   const getColor = ({ img, x, y, pixelSize }) => {
-    // const img = params.image.data // external, doh
-
     const i = ((x * pixelSize) + ((y * pixelSize) * img.width)) * 4
     const [r, g, b, a] = img.pixels.slice(i, i + 4) || [0, 0, 0, 0]
     const color = $p5.color(r, g, b, a)
@@ -129,10 +125,10 @@ export default function ($p5) {
   const pixelGrid = ({ pixelSize, img }) => {
     const width = Math.floor(img.width / pixelSize)
     const height = Math.floor(img.height / pixelSize)
-    const pixels = new Array((width) * (height)).fill({})
+    const pixels = new Array(width * height).fill({})
       .map((p, i) => ({
-        x: Math.floor(i / (height)),
-        y: i % (height)
+        x: Math.floor(i / height),
+        y: i % height
       }))
     return {
       pixels,
@@ -141,7 +137,8 @@ export default function ($p5) {
     }
   }
 
-  const pixelSize = () => Math.floor(params.image.data.width / params.pixelizationSlider.value())
+  const pixelSize = () => Math.floor(params.image.data.width / pixelCount())
+  const pixelCount = () => params.pixelizationSlider.value()
 
   const redraw = () => {
     params.dirty = false
@@ -149,8 +146,10 @@ export default function ($p5) {
     const pxsz = pixelSize()
     const image = params.image.data
     const margin = params.marginSlider.value()
-    const newWidth = Math.floor(image.width / pxsz) * pxsz + (2 * margin)
-    const newHeight = Math.floor(image.height / pxsz) * pxsz + (2 * margin)
+    const outset = params.outsetSlider.value()
+    const addon = outset * pixelCount()
+    const newWidth = Math.floor(image.width / pxsz) * pxsz + (2 * margin) + addon
+    const newHeight = Math.floor(image.height / pxsz) * pxsz + (2 * margin) + addon
     $p5.resizeCanvas(newWidth, newHeight)
 
     params.image.data.loadPixels()
@@ -160,7 +159,7 @@ export default function ($p5) {
     $p5.push()
     $p5.translate(margin, margin)
 
-    const grid = pixelGrid({ pixelSize: pxsz, img: image })
+    const grid = pixelGrid({ pixelSize: pxsz, img: image, outset })
     grid.pixels.forEach(p => {
       let color = null
       switch (params.colorMode) {
@@ -186,14 +185,17 @@ export default function ($p5) {
       }
 
       $p5.fill(color)
+      // UGH THIS MATH
+      // half of outset needs to be on either side
+      // and there's so much crap in here I don't know what's going on
       if (params.square) {
-        $p5.square((p.x * pxsz) + (pxsz - insetSize) / 2, (p.y * pxsz) + (pxsz - insetSize) / 2, insetSize)
+        $p5.square((p.x * (pxsz + outset)) + (pxsz - insetSize) + outset / 2, (p.y * (pxsz + outset)) + (pxsz - insetSize + outset) / 2, insetSize)
       }
       if (params.circle) {
         if (params.scribble) {
           scribble.scribbleEllipse((p.x * pxsz) + pxsz / 2, (p.y * pxsz) + pxsz / 2, insetSize, insetSize)
         } else {
-          $p5.circle((p.x * pxsz) + pxsz / 2, (p.y * pxsz) + pxsz / 2, insetSize)
+          $p5.circle((p.x * (pxsz + outset)) + pxsz / 2, (p.y * (pxsz + outset)) + pxsz / 2, insetSize)
         }
       }
     })
@@ -262,6 +264,10 @@ export default function ($p5) {
       .style('width', '200px')
       .input(debounce(redraw, 200))
     params.insetSlider = $p5.createSlider(0, 99, initialStats.inset, 1)
+      .parent('simple-gui')
+      .style('width', '200px')
+      .input(debounce(redraw, 200))
+    params.outsetSlider = $p5.createSlider(0, 99, initialStats.outset, 1)
       .parent('simple-gui')
       .style('width', '200px')
       .input(debounce(redraw, 200))
