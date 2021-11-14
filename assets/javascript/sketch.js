@@ -19,7 +19,7 @@ export default function ($p5) {
 
   const initialStats = {
     pixels: 7,
-    inset: 0,
+    calcSize: 0,
     outset: 25,
     margin: 0,
     square: true,
@@ -60,7 +60,7 @@ export default function ($p5) {
   const setParams = ({ newParams = {}, sliders }) => {
     params = { ...params, ...newParams }
     params.pixelizationSlider.elt.value = sliders.pixels
-    params.insetSlider.elt.value = sliders.inset
+    params.insetSlider.elt.value = sliders.calcSize
     params.marginSlider.elt.value = sliders.margin
   }
 
@@ -160,7 +160,8 @@ export default function ($p5) {
 
     params.image.data.loadPixels()
     $p5.background(params.ground)
-    const insetSize = pxsz - (pxsz * (params.insetSlider.value() / 100)) || pxsz
+    const calcSize = pxsz - (pxsz * (params.insetSlider.value() / 100)) || pxsz
+    const inset = calcSize - pxsz
 
     $p5.push()
     $p5.translate(margin + (outset / 2), margin + (outset / 2))
@@ -191,20 +192,14 @@ export default function ($p5) {
       }
 
       $p5.fill(color)
-      // UGH THIS MATH
-      // half of outset needs to be on either side
-      // and there's so much crap in here I don't know what's going on
       if (params.square) {
-        // $p5.square((p.x * pxsz) + (pxsz - insetSize) / 2, (p.y * pxsz) + (pxsz - insetSize) / 2, insetSize)
-        // $p5.square((p.x * (pxsz + outset)) + (pxsz - insetSize) + outset / 2, (p.y * (pxsz + outset)) + (pxsz - insetSize + outset) / 2, insetSize)
-        // $p5.square((p.x * (pxsz + outset)) + (pxsz - insetSize + outset) / 2, (p.y * (pxsz + outset)) + (pxsz - insetSize + outset ) / 2, insetSize)
-        $p5.square((p.x * (pxsz + outset)) + outset / 2, p.y * (pxsz + outset) + outset / 2, insetSize)
+        $p5.square(p.x * (pxsz + outset) + ((outset - inset) / 2), p.y * (pxsz + outset) + ((outset - inset) / 2), calcSize)
       }
       if (params.circle) {
         if (params.scribble) {
-          scribble.scribbleEllipse((p.x * (pxsz + outset)) + pxsz / 2, (p.y * (pxsz + outset)) + pxsz / 2, insetSize, insetSize)
+          scribble.scribbleEllipse((p.x * (pxsz + outset)) + (pxsz + outset) / 2, (p.y * (pxsz + outset)) + (pxsz + outset) / 2, calcSize, calcSize)
         } else {
-          $p5.circle((p.x * (pxsz + outset)) + pxsz / 2, (p.y * (pxsz + outset)) + pxsz / 2, insetSize)
+          $p5.circle((p.x * (pxsz + outset)) + (pxsz + outset) / 2, (p.y * (pxsz + outset)) + (pxsz + outset) / 2, calcSize)
         }
       }
     })
@@ -272,7 +267,7 @@ export default function ($p5) {
       .parent('simple-gui')
       .style('width', '200px')
       .input(debounce(redraw, 200))
-    params.insetSlider = $p5.createSlider(0, 99, initialStats.inset, 1)
+    params.insetSlider = $p5.createSlider(0, 99, initialStats.calcSize, 1)
       .parent('simple-gui')
       .style('width', '200px')
       .input(debounce(redraw, 200))
