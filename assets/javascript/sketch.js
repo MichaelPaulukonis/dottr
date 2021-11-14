@@ -23,31 +23,31 @@ export default function ($p5) {
     outset: 25,
     margin: 0,
     square: true,
-    circle: false,
+    circle: false
   }
 
   let params = {
     ...{
-    ground: grounds.black,
-    square: false,
-    circle: true,
-    dirty: true,
-    average: true,
-    colorMode: 0,
-    scribble: false,
-    img: null,
-    image: {
-      data: null,
-      name: ''
+      ground: grounds.black,
+      square: false,
+      circle: true,
+      dirty: true,
+      average: true,
+      colorMode: 0,
+      scribble: false,
+      img: null,
+      image: {
+        data: null,
+        name: ''
+      },
+      canvas: null,
+      pixelizationSlider: null,
+      insetSlider: null, // TODO: actual space between pixels
+      outsetSlider: null,
+      marginSlider: null,
+      margin: 0
     },
-    canvas: null,
-    pixelizationSlider: null,
-    insetSlider: null, // TODO: actual space between pixels
-    outsetSlider: null,
-    marginSlider: null,
-    margin: 0
-  },
-  ...initialStats
+    ...initialStats
   }
 
   const toggle = bool => !bool
@@ -192,8 +192,25 @@ export default function ($p5) {
       }
 
       $p5.fill(color)
+      $p5.strokeWeight(3)
+      // set the color of the hachure to a nice blue
+      $p5.stroke(color)
       if (params.square) {
-        $p5.square(p.x * (pxsz + outset) + ((outset - inset) / 2), p.y * (pxsz + outset) + ((outset - inset) / 2), calcSize)
+        const x = p.x * (pxsz + outset) + ((outset - inset) / 2)
+        const y = p.y * (pxsz + outset) + ((outset - inset) / 2)
+        if (params.scribble) {
+          // CENTERED, not upper-left
+          scribble.scribbleRect(x, y, calcSize, calcSize)
+          // need to do hachure to fill in, so.... not easy-peasy
+          // see https://github.com/generative-light/p5.scribble.js/blob/master/examples/chart.html
+          // hoo-boy, more compilkated
+          const xCoords = [x, x + calcSize, x + calcSize, x]
+          const yCoords = [y, y + calcSize, y + calcSize, y]
+
+          scribble.scribbleFilling(xCoords, yCoords, 3.5, 315)
+        } else {
+          $p5.square(p.x * (pxsz + outset) + ((outset - inset) / 2), p.y * (pxsz + outset) + ((outset - inset) / 2), calcSize)
+        }
       }
       if (params.circle) {
         if (params.scribble) {
