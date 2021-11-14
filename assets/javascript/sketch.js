@@ -209,7 +209,7 @@ export default function ($p5) {
 
           scribble.scribbleFilling(xCoords, yCoords, 3.5, 315)
         } else {
-          $p5.square(p.x * (pxsz + outset) + ((outset - inset) / 2), p.y * (pxsz + outset) + ((outset - inset) / 2), calcSize)
+          $p5.square((p.x * (pxsz + outset)) + (pxsz + outset) / 2, (p.y * (pxsz + outset)) + (pxsz + outset) / 2, calcSize)
         }
       }
       if (params.circle) {
@@ -276,7 +276,7 @@ export default function ($p5) {
     params.canvas = canvas
 
     scribble = new Scribble($p5)
-
+    $p5.rectMode($p5.CENTER)
     $p5.pixelDensity(1)
     $p5.image(params.image.data, 0, 0, params.image.data.width, params.image.data.height)
     $p5.noStroke()
